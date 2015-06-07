@@ -1,27 +1,31 @@
 db:
   image: postgres:9.4
   environment:
-    - POSTGRES_PASSWORD=mysecretpassword
+    - POSTGRES_PASSWORD=password
+
 redis:
   image: redis:2.8.19
+
 rabbitmq:
   image: tutum/rabbitmq
   environment:
-    - RABBITMQ_PASS=mypass
+    - RABBITMQ_PASS=password
   ports:
     - "5672:5672"
     - "15672:15672"
-web:
+
+app:
   build: .
   command: ./run_web.sh
   volumes:
     - .:/app
   ports:
-    - "8000:8000"
+    - "8008:8000"
   links:
     - db:db
     - rabbitmq:rabbit
     - redis:redis
+
 worker:
   build: .
   command: ./run_celery.sh
