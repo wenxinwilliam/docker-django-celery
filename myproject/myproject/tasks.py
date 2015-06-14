@@ -1,4 +1,5 @@
 from functools import wraps
+from time import sleep
 
 from myproject.celeryconf import app
 from .models import Job
@@ -45,7 +46,24 @@ def _fib(n):
     else:
         return _fib(n - 1) + _fib(n - 2)
 
+
+@app.task
+@update_job
+def sleepwake(n):
+    """sleeping for a number of seconds"""
+    sleep(n)
+    return n
+
+
+@update_job
+def syncsleepwake(n=1):
+    """sleeping for a number of seconds"""
+    sleep(n)
+    return n
+
+
 TASK_MAPPING = {
     'power': power,
-    'fibonacci': fib
+    'fibonacci': fib,
+    'sleepwake': sleepwake,
 }

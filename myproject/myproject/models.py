@@ -5,6 +5,8 @@ class Job(models.Model):
     TYPES = (
         ('fibonacci', 'fibonacci'),
         ('power', 'power'),
+        ('sleepwake', 'sleepwake'),
+        ('syncsleepwake', 'syncsleepwake'),
     )
 
     STATUSES = (
@@ -25,6 +27,11 @@ class Job(models.Model):
     def save(self, *args, **kwargs):
         super(Job, self).save(*args, **kwargs)
         if self.status == 'pending':
+            if self.type == 'syncsleepwake':
+                from .tasks import syncsleepwake
+                syncsleepwake(job_id=self.id, n=self.argument)
+                return
+                
             from .tasks import TASK_MAPPING
             task = TASK_MAPPING[self.type]
             task.delay(job_id=self.id, n=self.argument)
