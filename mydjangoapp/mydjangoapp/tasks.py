@@ -1,7 +1,7 @@
 from functools import wraps
 from time import sleep
 
-from myproject.celeryconf import app
+from mydjangoapp.celeryconf import app
 from .models import Job
 
 

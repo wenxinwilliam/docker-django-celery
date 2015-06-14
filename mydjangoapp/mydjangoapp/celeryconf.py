@@ -6,9 +6,9 @@ import os
 from celery import Celery
 from django.conf import settings
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myproject.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mydjangoapp.settings")
 
-app = Celery('myproject')
+app = Celery('mydjangoapp')
 
 CELERY_TIMEZONE = 'UTC'
 

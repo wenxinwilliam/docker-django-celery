@@ -20,7 +20,7 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'rest_framework',
-    'myproject',
+    'mydjangoapp',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -31,9 +31,9 @@ REST_FRAMEWORK = {
     'PAGINATE_BY': 10
 }
 
-ROOT_URLCONF = 'myproject.urls'
+ROOT_URLCONF = 'mydjangoapp.urls'
 
-WSGI_APPLICATION = 'myproject.wsgi.application'
+WSGI_APPLICATION = 'mydjangoapp.wsgi.application'
 
 TIME_ZONE = 'UTC'
 USE_TZ = True
