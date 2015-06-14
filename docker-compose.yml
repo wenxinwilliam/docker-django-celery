@@ -16,9 +16,9 @@ rabbitmq:
 
 app:
   build: .
-  command: ./run_web.sh
+  command: ./run_app.sh
   volumes:
-    - .:/app
+    - ./mydjangoapp:/app
   ports:
     - "8008:8000"
   links:
@@ -26,11 +26,23 @@ app:
     - rabbitmq:rabbit
     - redis:redis
 
+asyncapp:
+  build: .
+  command: sh ./run_async_app.sh
+  volumes:
+    - ./myaiohttpapp:/app
+  ports:
+    - "8009:8000"
+  links:
+    - db:db
+    - rabbitmq:rabbit
+    - redis:redis
+
 worker:
   build: .
-  command: ./run_celery.sh
+  command: ./run_celery_worker.sh
   volumes:
-    - .:/app
+    - ./mydjangoapp:/app
   links:
     - db:db
     - rabbitmq:rabbit
