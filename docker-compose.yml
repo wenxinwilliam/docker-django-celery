@@ -16,7 +16,7 @@ rabbitmq:
 
 app:
   build: .
-  command: ./run_app.sh
+  command: sh ./run_app.sh
   volumes:
     - ./mydjangoapp:/app
   ports:
@@ -40,7 +40,7 @@ asyncapp:
 
 worker:
   build: .
-  command: ./run_celery_worker.sh
+  command: sh ./run_celery_worker.sh
   volumes:
     - ./mydjangoapp:/app
   links:
