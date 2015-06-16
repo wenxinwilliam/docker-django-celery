@@ -29,11 +29,14 @@ def wshandler(request):
 
 @asyncio.coroutine
 def sleep_handler(request):
+    is_sync = request.GET.get('is_sync') == "1"
     seconds = int(request.match_info.get('seconds', 1))
     if seconds not in range(1,10):
         seconds = 1
-
-    yield from asyncio.sleep(seconds)
+    if is_sync:
+        time.sleep(seconds)
+    else:
+        yield from asyncio.sleep(seconds)
     text = "Wake up after {} seconds".format(seconds)
     return web.Response(body=text.encode('utf-8'))
 
