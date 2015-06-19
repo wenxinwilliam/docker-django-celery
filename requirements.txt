@@ -5,3 +5,4 @@ psycopg2==2.5.4
 redis==2.10.3
 aiohttp==0.16.5
 python3-pika==0.9.14
+asynqp==0.3

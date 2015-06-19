@@ -19,12 +19,41 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+
+    ### - django admin site - #
+    'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.admin',
+    # - django admin site - ###
+
     'rest_framework',
     'mydjangoapp',
 )
 
 MIDDLEWARE_CLASSES = (
+    ### - django admin site - #
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    # - django admin site - ###
 )
+
+TEMPLATES = [
+    ### - django admin site - #
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': 
+        {
+            'context_processors': 
+            (
+                'django.contrib.messages.context_processors.messages',
+                'django.contrib.auth.context_processors.auth',
+            )
+        }
+    },
+    # - django admin site - ###
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
@@ -108,3 +137,5 @@ CELERYD_HIJACK_ROOT_LOGGER = False
 CELERYD_PREFETCH_MULTIPLIER = 1
 CELERYD_MAX_TASKS_PER_CHILD = 1000
 CELERY_ACCEPT_CONTENT = ['application/json']
+
+USER_TOKEN_DB = 1
