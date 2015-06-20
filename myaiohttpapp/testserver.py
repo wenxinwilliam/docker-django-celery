@@ -63,9 +63,10 @@ def sleep_handler(request):
     return web.Response(body=text.encode('utf-8'))
 
 
-def callback_wrapper(ws_sockets):
+def callback_wrapper(channel, ws_sockets):
     @asyncio.coroutine
     def callback(body, envelope, properties):
+        yield from channel.basic_client_ack(envelope.delivery_tag)
         for socket in ws_sockets:
             socket.send_str('amqp: {}'.format(body))
     return callback
@@ -92,7 +93,13 @@ def receive(ws_sockets):
     yield from channel.queue_bind(queue_name, 'ws_msg.exchange', 'ws_msg')
 
     # yield from asyncio.wait_for(channel.queue(queue_name, durable=False, auto_delete=False), timeout=10)
-    yield from asyncio.wait_for(channel.basic_consume(queue_name, callback=callback_wrapper(ws_sockets)), timeout=10)
+    yield from asyncio.wait_for(
+        channel.basic_consume(
+            queue_name,
+            callback=callback_wrapper(channel, ws_sockets)
+        ),
+        timeout=10
+    )
 
 
 
