@@ -49,6 +49,9 @@ TEMPLATES = [
             (
                 'django.contrib.messages.context_processors.messages',
                 'django.contrib.auth.context_processors.auth',
+                ### for static context #
+                'django.core.context_processors.static',
+                ### for static context #
             )
         }
     },
@@ -76,6 +79,7 @@ USE_L10N = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 STATIC_URL = '/static/'
 DATABASES = {
     'default': {

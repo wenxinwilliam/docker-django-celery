@@ -15,7 +15,7 @@ rabbitmq:
     - "15672:15672"
 
 app:
-  build: .
+  build: ./mydjangoapp
   command: sh ./run_app.sh
   volumes:
     - ./mydjangoapp:/app
@@ -27,7 +27,7 @@ app:
     - redis:redis
 
 asyncapp:
-  build: .
+  build: ./myaiohttpapp
   command: sh ./run_async_app.sh
   volumes:
     - ./myaiohttpapp:/app
@@ -39,7 +39,7 @@ asyncapp:
     - redis:redis
 
 worker:
-  build: .
+  build: ./mydjangoapp
   command: sh ./run_celery_worker.sh
   volumes:
     - ./mydjangoapp:/app

@@ -35,3 +35,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+
+### Node/Bower ###
+node_modules/
+bower_components/

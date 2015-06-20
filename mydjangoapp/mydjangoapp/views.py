@@ -4,10 +4,19 @@ import redis
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.template.response import TemplateResponse
 from rest_framework import mixins, viewsets
 
 from .models import Job
 from .serializers import JobSerializer
+
+
+def home(request):
+	context = {
+		'user': request.user
+	}
+	return TemplateResponse(request, 'home.html', context)
+
 
 
 class JobViewSet(mixins.CreateModelMixin,

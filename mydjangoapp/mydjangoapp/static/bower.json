@@ -1,0 +1,12 @@
+{
+  "name": "mydjangoapp",
+  "description": "mydjangoapp",
+  "version": "0.0.1",
+  "homepage": "",
+  "license": "Private",
+  "private": true,
+  "dependencies": {
+  },
+  "resolutions": {
+  }
+}

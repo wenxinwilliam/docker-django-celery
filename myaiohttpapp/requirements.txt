@@ -1,0 +1,3 @@
+redis==2.10.3
+aiohttp==0.16.5
+aioamqp==0.3
