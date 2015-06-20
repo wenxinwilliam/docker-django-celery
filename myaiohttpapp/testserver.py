@@ -1,6 +1,6 @@
 import asyncio
 from aiohttp import web
-import asynqp
+import aioamqp
 import time
 import os
 
@@ -25,6 +25,7 @@ def wshandler(request):
     resp.start(request)
 
     request.app['sockets'].append(resp)
+    # print(request.app['sockets'])
 
     while True:
         msg = yield from resp.receive()
@@ -62,56 +63,37 @@ def sleep_handler(request):
     return web.Response(body=text.encode('utf-8'))
 
 
-@asyncio.coroutine
-def setup_connection(loop):
-    print('s')
-    # connect to the RabbitMQ broker
-    connection = yield from asynqp.connect(
-        os.environ.get('RABBIT_PORT_5672_TCP_ADDR', '127.0.0.1'),
-        int(os.environ.get('RABBIT_PORT_5672_TCP_PORT', 5672)),
-        username=os.environ.get('RABBIT_ENV_USER', 'admin'),
-        password=os.environ.get('RABBIT_ENV_RABBITMQ_PASS', 'password'),
-    )
-    return connection
-
-
-@asyncio.coroutine
-def on_receive_wrapper(ws_sockets):
-    def on_receive(msg):
+def callback_wrapper(ws_sockets):
+    @asyncio.coroutine
+    def callback(body, envelope, properties):
         for socket in ws_sockets:
-            socket.send_str('amqp: {}'.format(msg))
-    return on_receive
+            socket.send_str('amqp: {}'.format(body))
+    return callback
 
 
 @asyncio.coroutine
-def setup_consumer(connection, channels, ws_sockets):
-    print('s')
-    # callback will be called each time a message is received from the queue
+def receive(ws_sockets):
+    try:
+        transport, protocol = yield from aioamqp.connect(
+            host=os.environ.get('RABBIT_PORT_5672_TCP_ADDR', '192.168.59.103'),
+            port=int(os.environ.get('RABBIT_PORT_5672_TCP_PORT', 5672)),
+            login=os.environ.get('RABBIT_ENV_USER', 'admin'),
+            password=os.environ.get('RABBIT_ENV_RABBITMQ_PASS', 'password'),
+        )
+    except Exception as e:
+        print("closed connections")
+        return
 
-    _, queue = yield from setup_exchange_and_queue(connection, channels)
+    channel = yield from protocol.channel()
+    exchange = yield from channel.exchange_declare(exchange_name='ws_msg.exchange', type_name='direct')
+    queue_name = 'ws_msg'
 
-    # connect the callback to the queue
-    consumer = yield from queue.consume(on_receive_wrapper(ws_sockets))
-    return consumer
+    yield from channel.queue_declare(queue_name)
+    yield from channel.queue_bind(queue_name, 'ws_msg.exchange', 'ws_msg')
 
+    # yield from asyncio.wait_for(channel.queue(queue_name, durable=False, auto_delete=False), timeout=10)
+    yield from asyncio.wait_for(channel.basic_consume(queue_name, callback=callback_wrapper(ws_sockets)), timeout=10)
 
-@asyncio.coroutine
-def setup_exchange_and_queue(connection, channels):
-    print('s')
-    # Open a communications channel
-    channel = yield from connection.open_channel()
-
-    # Create a queue and an exchange on the broker
-    # exchange = yield from channel.declare_exchange('ws_msg.exchange', 'direct')
-    queue = yield from channel.declare_queue('ws_msg')
-
-    # Save a reference to each channel so we can close it later
-    channels.append(channel)
-
-    # Bind the queue to the exchange, so the queue will get messages published to the exchange
-    yield from queue.bind(exchange, 'ws_msg')
-
-    return exchange, queue
 
 
 @asyncio.coroutine
@@ -122,22 +104,20 @@ def init(loop):
     app.router.add_route('GET', '/sleep/{seconds}', sleep_handler)
     app.router.add_route('GET', '/{name}', handle)
 
-    srv = yield from loop.create_server(app.make_handler(),
-                                        '0.0.0.0', 8000)
-    print("Server started at http://0.0.0.0:8000")
+    srv = yield from loop.create_server(
+        app.make_handler(),
+        '0.0.0.0', 8000
+    )
+    print("async server started at http://0.0.0.0:8000")
 
     loop.create_task(ws_ping(app['sockets'], 2))
-
-    connection = yield from setup_connection(loop)
-    channels = []
-    consumer = yield from setup_consumer(connection, channels, app['sockets'])
 
     return srv, app
 
 
 loop = asyncio.get_event_loop()
 srv, app = loop.run_until_complete(init(loop))
-
+loop.run_until_complete(receive(app['sockets']))
 try:
     loop.run_forever()
 except KeyboardInterrupt:

@@ -53,9 +53,11 @@ def send_msg(msg):
 
 	channel = connection.channel()
 	# channel.queue_delete(queue='ws_msg')
+	channel.exchange_declare(exchange='ws_msg.exchange',type='direct')
 	channel.queue_declare(queue='ws_msg')
+	channel.queue_bind(exchange='ws_msg.exchange', queue='ws_msg')
 	channel.basic_publish(
-		exchange='',
+		exchange='ws_msg.exchange',
 		routing_key='ws_msg',
 		body=msg,
 	)
