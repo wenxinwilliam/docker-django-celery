@@ -1,6 +1,5 @@
 import os
 import uuid
-import redis
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -10,6 +9,7 @@ from rest_framework import mixins, viewsets
 from .models import Job
 from .serializers import JobSerializer
 from .messagequeue import send_msg
+from .redisconf import redis_conn
 
 
 def home(request):
@@ -34,16 +34,12 @@ class JobViewSet(mixins.CreateModelMixin,
 
 @login_required
 def get_ws_token(request):
-	r = redis.StrictRedis(
-		host=settings.REDIS_HOST,
-		port=settings.REDIS_PORT,
-		db=settings.USER_TOKEN_DB,
-	)
+
 	token = request.session.get('ws_token', None)
 	if not token:
 		token = uuid.uuid4().hex
 		request.session['ws_token'] = token
-		r.set(token, 1)
+		redis_conn.set(token, 1)
 
 	send_msg({'token': token})
 	return JsonResponse({'token': token})
