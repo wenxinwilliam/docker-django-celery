@@ -16,9 +16,9 @@ parameters = pika.ConnectionParameters(
 
 connection = pika.BlockingConnection(parameters)
 
-def send_msg(body, headers=None):
+channel = connection.channel()
 
-    channel = connection.channel()
+def send_msg(body, headers=None):
     # channel.queue_delete(queue='ws_msg')
     channel.exchange_declare(exchange='ws_msg.exchange',type='direct')
     channel.queue_declare(queue='ws_msg')

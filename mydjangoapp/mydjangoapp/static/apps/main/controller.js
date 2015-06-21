@@ -36,7 +36,8 @@ var Controller = Backbone.Marionette.Controller.extend({
                         body: decoded_data[2],
                     }
                     if(msg.type == 'job'){
-                        alert('job(' + msg.id + ') ' + msg.body)
+                        alert('job(' + msg.id + ') ' + msg.body);
+                        window.location.reload()
                     }
                 };
 
