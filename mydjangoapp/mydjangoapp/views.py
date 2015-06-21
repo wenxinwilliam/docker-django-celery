@@ -45,5 +45,5 @@ def get_ws_token(request):
 		request.session['ws_token'] = token
 		r.set(token, 1)
 
-	send_msg(token)
+	send_msg({'token': token})
 	return JsonResponse({'token': token})

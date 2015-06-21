@@ -81,7 +81,7 @@ def callback_wrapper(channel, ws_sockets):
     def callback(body, envelope, properties):
         yield from channel.basic_client_ack(envelope.delivery_tag)
         for socket in ws_sockets:
-            socket.send_str('amqp: {}'.format(body))
+            ws_sockets[socket].send_str('amqp: {}'.format(body))
     return callback
 
 
