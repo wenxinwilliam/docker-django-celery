@@ -2,12 +2,14 @@
 	<div class="list-group col-sm-12">
 	<h3>Jobs: </h3>
 	{{#each jobs}}
-		<a href="#" class="list-group-item">{{ type }}({{ argument }}) = 
-		{{#if result}}
-			{{ result }}
-		{{else}}
-			...
-		{{/if}}
+		<a href="#" class="list-group-item">
+			{{ type }}({{ argument }}) = 
+			{{#if result}}
+				{{ result }}
+			{{else}}
+				...
+			{{/if}}
+			 ({{ status }})
 		</a>
 	{{/each}}
 	</div>

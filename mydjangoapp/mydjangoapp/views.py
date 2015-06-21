@@ -31,6 +31,10 @@ class JobViewSet(mixins.CreateModelMixin,
     queryset = Job.objects.all()
     serializer_class = JobSerializer
 
+    def create(self, request, *args, **kwargs):
+    	request.data['user_id'] = request.user.id
+    	return super().create(request, *args, **kwargs)
+
 
 @login_required
 def get_ws_token(request):
@@ -39,7 +43,7 @@ def get_ws_token(request):
 	if not token:
 		token = uuid.uuid4().hex
 		request.session['ws_token'] = token
-		redis_conn.set(token, 1)
+		redis_conn.set(request.user.id, token)
 
-	send_msg({'token': token})
-	return JsonResponse({'token': token})
+	send_msg({'user_id':request.user.id ,'token': token})
+	return JsonResponse({'id':request.user.id ,'token': token})

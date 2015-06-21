@@ -18,9 +18,12 @@ var Controller = Backbone.Marionette.Controller.extend({
 		//TODO: code to initialize
         new UserToken().fetch({
             success: function(model){
-                app.user.ws_token = model.get('token');
+                app.user = model.toJSON();
+                // app.user.ws_token = model.get('token');
                 // console.log(app.user)
-                var ws_socket_addr = "ws://" + window.location.hostname + ":8009" + "/api/ws/" + app.user.ws_token;
+                var ws_socket_addr = "ws://" + window.location.hostname + 
+                    ":8009" + "/api/ws/" + app.user.id + "/" + app.user.token;
+
                 console.log(ws_socket_addr);
                 app.ws_socket = new WebSocket(ws_socket_addr);
 

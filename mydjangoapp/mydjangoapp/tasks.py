@@ -4,6 +4,7 @@ from time import sleep
 from mydjangoapp.celeryconf import app
 from .models import Job
 from .messagequeue import send_msg
+from .redisconf import redis_conn
 
 
 def update_job(fn):
@@ -16,12 +17,16 @@ def update_job(fn):
             result = fn(*args, **kwargs)
             job.result = result
             job.status = 'finished'
-            send_msg('job done')
             job.save()
         except:
             job.result = None
             job.status = 'failed'
             job.save()
+
+        token = redis_conn.get(job.user_id)
+        if token:
+            send_msg({'user_id': job.user_id, 'job_id': job.id, 'status': job.status})
+
     return wrapper
 
 

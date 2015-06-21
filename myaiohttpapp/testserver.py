@@ -4,6 +4,7 @@ import asyncio_redis
 import aioamqp
 import time
 import os
+import json
 
 WS_FILE = os.path.join(os.path.dirname(__file__), 'websocket-error.html')
 
@@ -16,14 +17,16 @@ def handle(request):
 
 @asyncio.coroutine
 def wshandler(request):
+    user_id = request.match_info.get('user_id', None)
     token = request.match_info.get('token', None)
-    if not token:
+    if not user_id or not token:
         return web.Response(status=401)
     redis = request.app['redis']
-    authenticated = yield from redis.get(token)
+    server_token = yield from redis.get(user_id)
+    # print(user_id)
     # print(token)
-    # print(authenticated)
-    if not authenticated:
+    # print(server_token)
+    if token != server_token:
         return web.Response(status=403)
 
     resp = web.WebSocketResponse()
@@ -36,7 +39,7 @@ def wshandler(request):
     resp.start(request)
 
     # request.app['sockets'].append(resp)
-    request.app['sockets'][token] = resp
+    request.app['sockets'][user_id] = resp
     # print(request.app['sockets'])
 
     while True:
@@ -48,7 +51,7 @@ def wshandler(request):
             resp.send_bytes(msg.data)
         elif msg.tp == web.MsgType.close:
             # request.app['sockets'].remove(resp)
-            request.app['sockets'].pop(token, None)
+            request.app['sockets'].pop(user_id, None)
             break
 
     return resp
@@ -76,17 +79,35 @@ def sleep_handler(request):
     return web.Response(body=text.encode('utf-8'))
 
 
-def callback_wrapper(channel, ws_sockets):
+def callback_wrapper(channel, app):
     @asyncio.coroutine
     def callback(body, envelope, properties):
         yield from channel.basic_client_ack(envelope.delivery_tag)
-        for socket in ws_sockets:
-            ws_sockets[socket].send_str('amqp: {}'.format(body))
+        data = json.loads(body.decode('utf-8'))
+
+        user_id = str(data.get('user_id'))
+
+        redis = app['redis']
+        authenticated = yield from redis.exists(user_id)
+
+        if authenticated:
+            socket = app['sockets'][user_id]
+            if data.get('job_id'):
+                socket.send_str(
+                    '{}:{}:{}'.format(
+                        'job',
+                        data.get('job_id'),
+                        'is {}'.format(data.get('status'))
+                    )
+                )
+
+        for socket in app['sockets']:
+            app['sockets'][socket].send_str('{}'.format(data))
     return callback
 
 
 @asyncio.coroutine
-def receive(ws_sockets):
+def receive(app):
     try:
         transport, protocol = yield from aioamqp.connect(
             host=os.environ.get('RABBIT_PORT_5672_TCP_ADDR', '192.168.59.103'),
@@ -109,7 +130,7 @@ def receive(ws_sockets):
     yield from asyncio.wait_for(
         channel.basic_consume(
             queue_name,
-            callback=callback_wrapper(channel, ws_sockets)
+            callback=callback_wrapper(channel, app)
         ),
         timeout=10
     )
@@ -132,7 +153,7 @@ def setup_redis(app):
 def init(loop):
     app = web.Application(loop=loop)
     app['sockets'] = {}
-    app.router.add_route('GET', '/api/ws/{token}', wshandler)
+    app.router.add_route('GET', '/api/ws/{user_id}/{token}', wshandler)
     app.router.add_route('GET', '/sleep/{seconds}', sleep_handler)
     app.router.add_route('GET', '/{name}', handle)
 
@@ -150,7 +171,7 @@ def init(loop):
 
 loop = asyncio.get_event_loop()
 srv, app = loop.run_until_complete(init(loop))
-loop.run_until_complete(receive(app['sockets']))
+loop.run_until_complete(receive(app))
 try:
     loop.run_forever()
 except KeyboardInterrupt:

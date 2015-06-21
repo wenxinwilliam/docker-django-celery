@@ -24,6 +24,8 @@ class Job(models.Model):
     argument = models.PositiveIntegerField()
     result = models.IntegerField(null=True)
 
+    user_id = models.IntegerField()
+
     def save(self, *args, **kwargs):
         super(Job, self).save(*args, **kwargs)
         if self.status == 'pending':
