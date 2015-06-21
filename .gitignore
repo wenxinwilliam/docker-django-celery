@@ -39,3 +39,6 @@ __pycache__/
 ### Node/Bower ###
 node_modules/
 bower_components/
+
+### Project ###
+dist/

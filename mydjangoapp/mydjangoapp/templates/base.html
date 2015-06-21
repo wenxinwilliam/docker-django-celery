@@ -5,13 +5,16 @@
 <html class="no-js" lang="en">
 <!--<![endif]-->
     <head>
+        <title>mydjangoapp home</title>
         <link rel="stylesheet" href="{{ STATIC_URL }}node_modules/bootstrap/dist/css/bootstrap.css">
         {% block header_styles %}
         {% endblock %}
         <script type="text/javascript" src="{{ STATIC_URL }}node_modules/underscore/underscore-min.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}node_modules/jquery/jquery.min.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}node_modules/backbone/backbone-min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}node_modules/backbone.marionette/lib/backbone.marionette.js" ></script>
         <script type="text/javascript" src="{{ STATIC_URL }}node_modules/backbone.paginator/lib/backbone.paginator.min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}node_modules/handlebars/dist/handlebars.min.js" ></script>
         {% block header_scripts %}
         {% endblock %}
     </head>

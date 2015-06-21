@@ -1,7 +1,4 @@
-
-var Job = Backbone.Model.extend({
-	urlRoot: "/api/jobs/"
-})
+var Job = require('./job.model.js');
 
 var Jobs = Backbone.PageableCollection.extend({
 
@@ -39,10 +36,4 @@ var Jobs = Backbone.PageableCollection.extend({
 	
 })
 
-var jobs = new Jobs();
-
-jobs.fetch({
-	success: function(data){
-		console.log(data)
-	}
-})
+module.exports = Jobs

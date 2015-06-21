@@ -6,7 +6,6 @@
   "license": "Private",
   "private": true,
   "dependencies": {
-  },
-  "resolutions": {
+    "routefilter": "0.2.x"
   }
 }

@@ -13,7 +13,8 @@ from .serializers import JobSerializer
 
 def home(request):
 	context = {
-		'user': request.user
+		'user': request.user,
+		'STATIC_URL': settings.STATIC_URL,
 	}
 	return TemplateResponse(request, 'home.html', context)
 
