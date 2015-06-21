@@ -1,3 +1,4 @@
+require('jquery.cookie');
 
 __webpack_public_path__ = STATIC_URL + 'dist/main/';
 
@@ -37,6 +38,9 @@ app.addInitializer(function(options) {
 app.on("start", function(){
     // Start Backbone history a necessary step for bookmarkable URL's
     // console.log('app started')
+    $.ajaxSetup({
+        headers: {'X-CSRFToken': $.cookie('csrftoken')}
+    });
 });
 
 app.addRegions({

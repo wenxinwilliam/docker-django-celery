@@ -13,7 +13,7 @@ var JobView = Backbone.Marionette.ItemView.extend({
 	},
 
 	events: {
-		'click ui.submit': 'createJob'
+		'click @ui.submit': 'createJob'
 	},
 
 	model: new Job(),
@@ -37,8 +37,9 @@ var JobView = Backbone.Marionette.ItemView.extend({
 		e.preventDefault();
 
 		this.model = new Job({
-			type: ui.jobType.val(),
-			argument: ui.jobArgs.val()
+			type: this.ui.jobType.val(),
+			argument: this.ui.jobArgs.val(),
+			status: 'pending',
 		})
 
 		this.model.save()

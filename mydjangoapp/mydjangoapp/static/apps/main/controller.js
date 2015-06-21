@@ -20,12 +20,21 @@ var Controller = Backbone.Marionette.Controller.extend({
             success: function(model){
                 app.user.ws_token = model.get('token');
                 // console.log(app.user)
-                var ws_socket_addr = "ws://" + window.location.hostname + ":8009" + "/echo";
+                var ws_socket_addr = "ws://" + window.location.hostname + ":8009" + "/api/ws/" + app.user.ws_token;
                 console.log(ws_socket_addr);
                 app.ws_socket = new WebSocket(ws_socket_addr);
 
                 app.ws_socket.onmessage = function(event) {
                     console.log(event.data);
+                    var decoded_data = event.data.split(':');
+                    var msg = {
+                        type: decoded_data[0],
+                        id: decoded_data[1],
+                        body: decoded_data[2],
+                    }
+                    if(msg.type == 'job'){
+                        alert('job(' + msg.id + ') ' + msg.body)
+                    }
                 };
 
                 app.ws_socket.onopen = function (event) {

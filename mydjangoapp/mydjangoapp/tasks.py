@@ -3,6 +3,7 @@ from time import sleep
 
 from mydjangoapp.celeryconf import app
 from .models import Job
+from .messagequeue import send_msg
 
 
 def update_job(fn):
@@ -15,6 +16,7 @@ def update_job(fn):
             result = fn(*args, **kwargs)
             job.result = result
             job.status = 'finished'
+            send_msg('job done')
             job.save()
         except:
             job.result = None

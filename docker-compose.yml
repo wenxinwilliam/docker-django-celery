@@ -5,6 +5,8 @@ db:
 
 redis:
   image: redis:2.8.19
+  environment:
+    - USER_TOKEN_DB=1
 
 rabbitmq:
   image: tutum/rabbitmq

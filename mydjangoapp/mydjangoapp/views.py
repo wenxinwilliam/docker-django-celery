@@ -9,6 +9,7 @@ from rest_framework import mixins, viewsets
 
 from .models import Job
 from .serializers import JobSerializer
+from .messagequeue import send_msg
 
 
 def home(request):
@@ -46,30 +47,3 @@ def get_ws_token(request):
 
 	send_msg(token)
 	return JsonResponse({'token': token})
-
-
-def send_msg(msg):
-	import pika
-	credentials = pika.PlainCredentials(
-	    os.environ.get('RABBIT_ENV_USER', 'admin'),
-	    os.environ.get('RABBIT_ENV_RABBITMQ_PASS', 'mypass'),
-	)
-	parameters = pika.ConnectionParameters(
-	    host=os.environ.get('RABBIT_PORT_5672_TCP_ADDR'),
-	    port=int(os.environ.get('RABBIT_PORT_5672_TCP_PORT')),
-	    credentials=credentials,
-	)
-	connection = pika.BlockingConnection(parameters)
-
-	channel = connection.channel()
-	# channel.queue_delete(queue='ws_msg')
-	channel.exchange_declare(exchange='ws_msg.exchange',type='direct')
-	channel.queue_declare(queue='ws_msg')
-	channel.queue_bind(exchange='ws_msg.exchange', queue='ws_msg')
-	channel.basic_publish(
-		exchange='ws_msg.exchange',
-		routing_key='ws_msg',
-		body=msg,
-	)
-	connection.close()
-

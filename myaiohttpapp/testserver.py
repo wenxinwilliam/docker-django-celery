@@ -1,5 +1,6 @@
 import asyncio
 from aiohttp import web
+import asyncio_redis
 import aioamqp
 import time
 import os
@@ -15,6 +16,16 @@ def handle(request):
 
 @asyncio.coroutine
 def wshandler(request):
+    token = request.match_info.get('token', None)
+    if not token:
+        return web.Response(status=401)
+    redis = request.app['redis']
+    authenticated = yield from redis.get(token)
+    # print(token)
+    # print(authenticated)
+    if not authenticated:
+        return web.Response(status=403)
+
     resp = web.WebSocketResponse()
     
     ok, protocol = resp.can_start(request)
@@ -24,7 +35,8 @@ def wshandler(request):
 
     resp.start(request)
 
-    request.app['sockets'].append(resp)
+    # request.app['sockets'].append(resp)
+    request.app['sockets'][token] = resp
     # print(request.app['sockets'])
 
     while True:
@@ -35,7 +47,8 @@ def wshandler(request):
         elif msg.tp == web.MsgType.binary:
             resp.send_bytes(msg.data)
         elif msg.tp == web.MsgType.close:
-            request.app['sockets'].remove(resp)
+            # request.app['sockets'].remove(resp)
+            request.app['sockets'].pop(token, None)
             break
 
     return resp
@@ -46,7 +59,7 @@ def ws_ping(sockets, seconds):
     while True:
         a = yield from asyncio.sleep(seconds)
         for socket in sockets:
-            socket.send_str('websocket server ping')
+            sockets[socket].send_str('websocket server ping')
 
 
 @asyncio.coroutine
@@ -82,7 +95,7 @@ def receive(ws_sockets):
             password=os.environ.get('RABBIT_ENV_RABBITMQ_PASS', 'password'),
         )
     except Exception as e:
-        print("closed connections")
+        print("closed amqp connections")
         return
 
     channel = yield from protocol.channel()
@@ -102,12 +115,24 @@ def receive(ws_sockets):
     )
 
 
+@asyncio.coroutine
+def setup_redis(app):
+    # Create Redis connection
+    connection = yield from asyncio_redis.Connection.create(
+        host=os.environ.get('REDIS_PORT_6379_TCP_ADDR', '127.0.0.1'),
+        port=int(os.environ.get('REDIS_PORT_6379_TCP_PORT', 6379)),
+        db=int(os.environ.get('USER_TOKEN_DB', 1)),
+    )
+    app['redis'] = connection
+
+    return connection
+
 
 @asyncio.coroutine
 def init(loop):
     app = web.Application(loop=loop)
-    app['sockets'] = []
-    app.router.add_route('GET', '/echo', wshandler)
+    app['sockets'] = {}
+    app.router.add_route('GET', '/api/ws/{token}', wshandler)
     app.router.add_route('GET', '/sleep/{seconds}', sleep_handler)
     app.router.add_route('GET', '/{name}', handle)
 
@@ -117,6 +142,7 @@ def init(loop):
     )
     print("async server started at http://0.0.0.0:8000")
 
+    loop.create_task(setup_redis(app))
     loop.create_task(ws_ping(app['sockets'], 2))
 
     return srv, app
