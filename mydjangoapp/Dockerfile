@@ -9,5 +9,6 @@ RUN adduser --disabled-password --gecos '' myuser
 RUN curl -sL https://deb.nodesource.com/setup | bash -
 RUN apt-get install -y nodejs
 RUN npm install -g bower
+RUN npm install -g webpack
 
 RUN bash install_static.sh
