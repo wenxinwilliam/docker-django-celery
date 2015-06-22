@@ -2,7 +2,8 @@
 
 ##### Running
 Install docker, docker-compose and run __docker-compose build__ then __docker-compose up__. Django is on port 8008 of docker and aiohttp async server is on port 8009.  
-_(Temporary) you'll need to install webpack on host / cd into docker and run __webpack --watch --colors__ in __mydjangoapp/mydjangoapp/static/apps/main/__ to generate compiled static files._
+
+(Temporary) you'll need to install webpack on host / cd into docker and run __webpack --watch --colors__ in __mydjangoapp/mydjangoapp/static/apps/main/__ to generate compiled static files.
 
 ##### Overview:
 1. User logs in (django), a one time token is generated and pushed to redis cache and sent back to user
