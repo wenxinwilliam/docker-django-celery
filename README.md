@@ -12,8 +12,8 @@
 Install docker, docker-compose and run __docker-compose build__ (only need to build once unless Dockerfile changes) then __docker-compose up__ (see notes below). Django is on port 8008 of docker and aiohttp async server is on port 8009 (refer to docker-compose.yml).  
 
 (Temporary steps - after running __docker-compose build__)  
-1. Either install webpack on host or ssh into docker (__docker exec -it dockerdjangocelery_app_1 bash__) and run __webpack --watch --colors__ inside __mydjangoapp/mydjangoapp/static/apps/main/__ to generate compiled static files (pending automation)  
-2. Right now to start the system, use __docker-compose up -d__ then do __docker start dockerdjangocelery_worker_1__ (because worker container bootstrapping with message queue needs to be fixed)  
+1. Right now to start the system, use __docker-compose up -d__ then do __docker start dockerdjangocelery_worker_1__ (because worker container bootstrapping with message queue needs to be fixed)  
+2. Either install webpack (__npm install -g webpack__) on host or ssh into docker (__docker exec -it dockerdjangocelery_app_1 bash__) and run __webpack --watch --colors__ inside __mydjangoapp/mydjangoapp/static/apps/main/__ to generate compiled static files (pending automation)  
 3. Create admin user using __docker exec -it dockerdjangocelery_app_1 python manage.py createsuperuser__, then login at _docker_hostname_or_ip_:8008/admin/ (will add those pages)  
 4. Go to _docker_hostname_or_ip_:8008/ to view jobs or add job  
 
